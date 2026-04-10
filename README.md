@@ -6,10 +6,11 @@ A professional, multi-provider CLI tool for translating `.po` files en masse usi
 
 - **Multi-Provider Support**: Switch seamlessly between **Google Gemini**, **Groq**, and **NVIDIA** (NIM).
 - **Context-Aware Translations**: Provide a `README.md` or any text file as context to improve translation accuracy and terminology consistency.
+- **Robust PO Parsing**: Handles multiline strings, escaped quotes, and complex file formatting natively.
 - **Intelligent Batching**: Translates multiple strings in a single API call to save on rate limits and speed up processing.
-- **PO File Optimization**: Preserves file structure while only translating empty `msgstr` entries.
-- **Configurable**: Global settings stored in `config.json` for easy customization.
-- **Rich Feedback**: Built-in progress bars and statistical summaries before each run.
+- **Auto-Stop & Save**: Automatically stops the process if rate limits are hit, ensuring all successful translations are saved immediately.
+- **Rich Feedback**: Colorized terminal output, progress bars, and statistical summaries for a professional experience.
+- **Smart Filtering**: Automatically ignores PO metadata/headers, focusing only on your actual text.
 
 ## Installation
 
@@ -111,15 +112,15 @@ pip uninstall u-translator
 ## Troubleshooting & Best Practices
 
 ### Handling Rate Limits
-If you encounter a `Rate limit exceeded` error, `u-trans` will automatically stop and save all translations completed up to that point. You can:
+If you encounter a `Rate limit exceeded` error, `u-trans` will automatically stop and write current progress to the file. 
 1. **Wait and resume**: Wait a few minutes and run the command again. It will skip already translated items.
-2. **Switch providers**: If you hit a limit on Gemini, try switching to Groq or NVIDIA.
+2. **Switch providers**: If you hit a limit on Gemini, try switching to Groq or NVIDIA using `--provider`.
 
 ### Empty Response / Content Blocked
-If you see `Empty response received from AI provider`, it usually means the AI safety filters blocked the translation.
-- **Identify the phrase**: `u-trans` will log the `Failed batch items` in the terminal.
+If you see `Empty response received from AI provider`, it usually means the AI safety filters blocked the translation or the prompt was too complex.
+- **Identify the phrase**: `u-trans` logs the `Failed batch items` in the terminal for easy identification.
 - **Lower Batch Size**: Run with `--batch-size 1` to isolate exactly which phrase is being blocked.
-- **Change Model**: Some models are stricter than others. Try switching between models or providers.
+- **Clean your PO file**: If you see formatting artifacts in the failed items list, check your PO file structure.
 
 ### Optimization Tips
 - **Use Context**: Always use the `--context` flag with your project's `README.md`. This helps the AI understand your specific domain and technical terms.
