@@ -2,7 +2,7 @@
 
 A professional, multi-provider CLI tool for translating `.po` files en masse using state-of-the-art AI models.
 
-## ✨ Features
+## Features
 
 - **Multi-Provider Support**: Switch seamlessly between **Google Gemini**, **Groq**, and **NVIDIA** (NIM).
 - **Context-Aware Translations**: Provide a `README.md` or any text file as context to improve translation accuracy and terminology consistency.
@@ -11,7 +11,7 @@ A professional, multi-provider CLI tool for translating `.po` files en masse usi
 - **Configurable**: Global settings stored in `config.json` for easy customization.
 - **Rich Feedback**: Built-in progress bars and statistical summaries before each run.
 
-## 🚀 Installation
+## Installation
 
 ### Option 1: Global Installation (Recommended)
 This installs `u-trans` in an isolated environment and makes it available system-wide:
@@ -27,7 +27,7 @@ Use this if you plan on modifying the source code:
 pip install -e .
 ```
 
-## ⚙️ Configuration & Persistence
+## Configuration & Persistence
 
 `u-trans` looks for its `config.json` file in two locations:
 1.  **Local Folder**: The directory where you launched the command.
@@ -61,7 +61,7 @@ If you installed the tool in **editable mode** (`pip install -e .`), deleting th
 *   Move your `config.json` to `~/.u-trans/config.json` to ensure your API keys and settings are preserved even if you change or delete the source code.
 *   The CLI will always print the path to the current config file it is using.
 
-## 🛠️ CLI Usage
+## CLI Usage
 
 Basic command structure:
 
@@ -94,6 +94,6 @@ u-trans [FILE_PATH] [OPTIONS]
    u-trans django.po --provider nvidia --batch-size 20
    ```
 
-## 📝 License
+## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
