@@ -5,9 +5,12 @@ from .translator import Translator
 from decouple import config
 
 def load_config():
-    """Tries to load config.json from local dir or home dir (~/.u-translator/config.json)."""
+    """Tries to load config.json from local dir or home dir (~/.u-trans/config.json).
+       If both are missing, it creates a default one in ~/.u-trans/config.json.
+    """
     local_path = os.path.abspath("config.json")
-    home_path = os.path.expanduser("~/.u-translator/config.json")
+    home_dir = os.path.expanduser("~/.u-trans")
+    home_path = os.path.join(home_dir, "config.json")
     
     # Priority: Local project folder > Home directory
     paths = [local_path, home_path]
@@ -19,7 +22,33 @@ def load_config():
             except Exception as e:
                 print(f"Warning: Failed to load {path}: {e}")
     
-    return {}, local_path
+    # Auto-generate default config if missing everywhere
+    default_config = {
+        "api_keys": {
+            "gemini": "your_gemini_api_key_here",
+            "groq": "your_groq_api_key_here",
+            "nvidia": "your_nvidia_api_key_here"
+        },
+        "default_provider": "gemini",
+        "default_model": {
+            "gemini": "gemini-1.5-flash",
+            "groq": "llama-3.1-70b-versatile",
+            "nvidia": "meta/llama-3.1-8b-instruct"
+        },
+        "batch_size": 10,
+        "lang": "Arabic",
+        "prompt": "Translate following phrases precisely to {lang}."
+    }
+
+    try:
+        os.makedirs(home_dir, exist_ok=True)
+        with open(home_path, "w") as f:
+            json.dump(default_config, f, indent=4)
+        print(f"Info: Default configuration created at {home_path}")
+        return default_config, home_path
+    except Exception as e:
+        print(f"Warning: Could not create default config: {e}")
+        return {}, local_path
 
 def get_args(defaults):
     """Parses CLI arguments with config.json as fallback for defaults."""
