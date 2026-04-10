@@ -80,8 +80,13 @@ class Translator:
         pattern = re.compile(r'msgid "(.*?)"\nmsgstr "(.*?)"', re.DOTALL)
         matches = list(pattern.finditer(content))
         
-        # Filter for only untranslated entries (empty msgstr)
-        untranslated = [(m.group(1), m.group(0)) for m in matches if not m.group(2)]
+        # Filter for only untranslated entries (empty msgstr) and non-empty msgid (ignore metadata)
+        untranslated = []
+        for m in matches:
+            msgid = m.group(1)
+            msgstr = m.group(2)
+            if msgid.strip() and not msgstr:
+                untranslated.append((msgid, m.group(0)))
         
         total_strings = len(matches)
         untranslated_count = len(untranslated)

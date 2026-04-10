@@ -108,6 +108,25 @@ pipx uninstall u-translator
 pip uninstall u-translator
 ```
 
+## Troubleshooting & Best Practices
+
+### Handling Rate Limits
+If you encounter a `Rate limit exceeded` error, `u-trans` will automatically stop and save all translations completed up to that point. You can:
+1. **Wait and resume**: Wait a few minutes and run the command again. It will skip already translated items.
+2. **Switch providers**: If you hit a limit on Gemini, try switching to Groq or NVIDIA.
+
+### Empty Response / Content Blocked
+If you see `Empty response received from AI provider`, it usually means the AI safety filters blocked the translation.
+- **Identify the phrase**: `u-trans` will log the `Failed batch items` in the terminal.
+- **Lower Batch Size**: Run with `--batch-size 1` to isolate exactly which phrase is being blocked.
+- **Change Model**: Some models are stricter than others. Try switching between models or providers.
+
+### Optimization Tips
+- **Use Context**: Always use the `--context` flag with your project's `README.md`. This helps the AI understand your specific domain and technical terms.
+- **Batch Size adjustment**: 
+    - Use larger batches (e.g., `20-50`) for speed if you have a high-tier API key.
+    - Use smaller batches (`1-5`) for higher accuracy and to avoid safety blocks.
+
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
