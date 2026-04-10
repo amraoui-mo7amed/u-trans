@@ -23,6 +23,13 @@ class Translator:
         else:
             raise ValueError(f"Provider {PROVIDER} is not supported.")
 
+    def _clean_po_content(self, content):
+        """Converts quoted PO content (possibly multiline) into a single clean string."""
+        # Find all quoted segments: "segment1" "segment2"
+        segments = re.findall(r'"(.*?)"', content, re.DOTALL)
+        # Filter out empty segments that are part of multiline definitions
+        return "".join(segments)
+
     def generate_content(self, input_text="", prompt=""):
         try:
             if self.provider == "gemini":
@@ -83,10 +90,16 @@ class Translator:
         # Filter for only untranslated entries (empty msgstr) and non-empty msgid (ignore metadata)
         untranslated = []
         for m in matches:
-            msgid = m.group(1)
+            original_msgid = m.group(1)
             msgstr = m.group(2)
-            if msgid.strip() and not msgstr:
-                untranslated.append((msgid, m.group(0)))
+            
+            cleaned_msgid = self._clean_po_content(original_msgid)
+            if cleaned_msgid.strip() and not msgstr:
+                untranslated.append({
+                    "original_id": original_msgid,
+                    "cleaned_id": cleaned_msgid,
+                    "full_match": m.group(0)
+                })
         
         total_strings = len(matches)
         untranslated_count = len(untranslated)
@@ -108,7 +121,7 @@ class Translator:
         print(f"Starting bulk translation of {untranslated_count} items...")
         for i in tqdm(range(0, len(untranslated), batch_size), desc=f"Translating to {lang} (batches of {batch_size})"):
             batch = untranslated[i:i + batch_size]
-            batch_msgids = [b[0] for b in batch]
+            batch_msgids = [b["cleaned_id"] for b in batch]
             
             # Format the batch prompt to return JSON
             context_section = f"\nTranslation Context (README/Docs):\n{context}\n" if context else ""
@@ -137,8 +150,12 @@ class Translator:
                 translated_batch = json.loads(response_text)
                 
                 if len(translated_batch) == len(batch):
-                    for (msgid, old_entry), translated_text in zip(batch, translated_batch):
-                        new_entry = f'msgid "{msgid}"\nmsgstr "{translated_text}"'
+                    for entry_data, translated_text in zip(batch, translated_batch):
+                        old_entry = entry_data["full_match"]
+                        msgid_part = entry_data["original_id"]
+                        
+                        # Preserve the original msgid formatting but add the translation
+                        new_entry = f'msgid "{msgid_part}"\nmsgstr "{translated_text}"'
                         new_content = new_content.replace(old_entry, new_entry, 1)
                 else:
                     print(f"\n\033[91m[ERROR] Batch size mismatch. Expected {len(batch)}, got {len(translated_batch)}. Skipping this batch.\033[0m")
