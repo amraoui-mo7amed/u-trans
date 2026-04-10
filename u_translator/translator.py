@@ -140,6 +140,7 @@ class Translator:
             except Exception as e:
                 error_msg = str(e)
                 print(f"\n\033[91m[ERROR] Exception during batch translation: {error_msg}\033[0m")
+                print(f"\033[90mFailed batch items: {batch_msgids}\033[0m")
                 
                 # If it's a rate limit or quota error, stop the process
                 if "rate limit" in error_msg.lower() or "429" in error_msg or "quota" in error_msg.lower():
