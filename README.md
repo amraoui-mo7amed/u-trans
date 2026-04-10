@@ -94,6 +94,20 @@ u-trans [FILE_PATH] [OPTIONS]
    u-trans django.po --provider nvidia --batch-size 20
    ```
 
+## Uninstallation
+
+To remove `u-trans` from your system:
+
+### If installed via pipx:
+```bash
+pipx uninstall u-translator
+```
+
+### If installed via pip:
+```bash
+pip uninstall u-translator
+```
+
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
