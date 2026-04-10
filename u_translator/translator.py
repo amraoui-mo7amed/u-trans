@@ -25,9 +25,10 @@ class Translator:
 
     def _clean_po_content(self, content):
         """Converts quoted PO content (possibly multiline) into a single clean string."""
-        # Find all quoted segments: "segment1" "segment2"
-        segments = re.findall(r'"(.*?)"', content, re.DOTALL)
-        # Filter out empty segments that are part of multiline definitions
+        # Find all quoted segments, handling escaped quotes: "segment1" "segment2"
+        # The regex matches " then any number of (non-quote or escaped-char) then "
+        segments = re.findall(r'"((?:[^"\\]|\\.)*)"', content, re.DOTALL)
+        # Join segments (PO standard: consecutive quoted strings are concatenated)
         return "".join(segments)
 
     def generate_content(self, input_text="", prompt=""):
@@ -83,18 +84,24 @@ class Translator:
         with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
 
-        # Regular expression to find msgid and msgstr pairs
-        pattern = re.compile(r'msgid "(.*?)"\nmsgstr "(.*?)"', re.DOTALL)
+        # Robust regex to find msgid and msgstr pairs, handling multiline strings and whitespace/line endings
+        # This matches msgid followed by one or more quoted strings, then msgstr and its quoted strings
+        pattern = re.compile(
+            r'msgid\s+((?:".*?"(?:\s+)?)+)\s+msgstr\s+((?:".*?"(?:\s+)?)+)',
+            re.DOTALL
+        )
         matches = list(pattern.finditer(content))
         
         # Filter for only untranslated entries (empty msgstr) and non-empty msgid (ignore metadata)
         untranslated = []
         for m in matches:
-            original_msgid = m.group(1)
-            msgstr = m.group(2)
+            original_msgid = m.group(1).strip()
+            original_msgstr = m.group(2).strip()
             
             cleaned_msgid = self._clean_po_content(original_msgid)
-            if cleaned_msgid.strip() and not msgstr:
+            cleaned_msgstr = self._clean_po_content(original_msgstr)
+            
+            if cleaned_msgid.strip() and not cleaned_msgstr.strip():
                 untranslated.append({
                     "original_id": original_msgid,
                     "cleaned_id": cleaned_msgid,
@@ -154,8 +161,9 @@ class Translator:
                         old_entry = entry_data["full_match"]
                         msgid_part = entry_data["original_id"]
                         
-                        # Preserve the original msgid formatting but add the translation
-                        new_entry = f'msgid "{msgid_part}"\nmsgstr "{translated_text}"'
+                        # Use a single-line replacement for msgstr to ensure correctness, 
+                        # but keep it simple enough for now.
+                        new_entry = f'msgid {msgid_part}\nmsgstr "{translated_text}"'
                         new_content = new_content.replace(old_entry, new_entry, 1)
                 else:
                     print(f"\n\033[91m[ERROR] Batch size mismatch. Expected {len(batch)}, got {len(translated_batch)}. Skipping this batch.\033[0m")
