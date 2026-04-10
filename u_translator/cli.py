@@ -98,7 +98,7 @@ def main():
             api_key = config("GOOGLE_API_KEY", default=None)
             
     if not api_key or "your_" in str(api_key):
-        print(f"\n[!] Error: API key for {args.provider.upper()} is missing.")
+        print(f"\n\033[91m[!] Error: API key for {args.provider.upper()} is missing.\033[0m")
         print(f"    Please edit your configuration here: {config_full_path}")
         return
         
@@ -114,7 +114,7 @@ def main():
         return
 
     if not args.file:
-        print("\n[!] Error: No .po file specified. Provide a file path or use --help.")
+        print("\n\033[91m[!] Error: No .po file specified. Provide a file path or use --help.\033[0m")
         return
 
     # Load context if provided
@@ -158,7 +158,7 @@ def main():
         )
         print(f"\nResult: {result}")
     except Exception as e:
-        print(f"\nAn error occurred: {e}")
+        print(f"\n\033[91mAn error occurred: {e}\033[0m")
 
 if __name__ == "__main__":
     main()

@@ -126,6 +126,9 @@ class Translator:
                 elif "```" in response_text:
                     response_text = response_text.split("```")[-1].split("```")[0].strip()
                 
+                if not response_text:
+                    raise ValueError("Empty response received from AI provider.")
+
                 translated_batch = json.loads(response_text)
                 
                 if len(translated_batch) == len(batch):
@@ -133,9 +136,15 @@ class Translator:
                         new_entry = f'msgid "{msgid}"\nmsgstr "{translated_text}"'
                         new_content = new_content.replace(old_entry, new_entry, 1)
                 else:
-                    print(f"\n[ERROR] Batch size mismatch. Expected {len(batch)}, got {len(translated_batch)}. Skipping this batch.")
+                    print(f"\n\033[91m[ERROR] Batch size mismatch. Expected {len(batch)}, got {len(translated_batch)}. Skipping this batch.\033[0m")
             except Exception as e:
-                print(f"\n[ERROR] Exception during batch translation: {str(e)}")
+                error_msg = str(e)
+                print(f"\n\033[91m[ERROR] Exception during batch translation: {error_msg}\033[0m")
+                
+                # If it's a rate limit or quota error, stop the process
+                if "rate limit" in error_msg.lower() or "429" in error_msg or "quota" in error_msg.lower():
+                    print("\033[93mStopping process due to rate limits. Progress saved.\033[0m")
+                    break
 
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(new_content)
